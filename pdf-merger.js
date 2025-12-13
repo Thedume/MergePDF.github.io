@@ -12,6 +12,9 @@ const elements = {
     outputFilename: document.getElementById('output-filename'),
     dropArea: document.getElementById('drop-area'),
     statusMessage: document.getElementById('status-message'),
+    progressContainer: document.getElementById('progress-container'),
+    progressBar: document.getElementById('progress-bar'),
+    progressText: document.getElementById('progress-text'),
 };
 
 /**
@@ -129,6 +132,9 @@ function moveFile(index, newIndex) {
 /**
  * 6. PDF 병합 로직 (PDF-LIB 사용)
  */
+/**
+ * 6. PDF 병합 로직 (PDF-LIB 사용)
+ */
 async function startMerge() {
     if (pdfFiles.length < 2) {
         updateStatus("❌ 병합하려면 PDF 파일이 최소 2개 필요합니다.", 'error');
@@ -136,46 +142,57 @@ async function startMerge() {
     }
 
     elements.mergeStartBtn.disabled = true;
-    updateStatus("⏳ PDF 병합 진행 중...", 'progress');
+    updateStatus("⏳ PDF 병합 시작 중...", 'progress');
+
+    // 진행률 표시줄 초기화 및 표시
+    elements.progressContainer.style.display = 'flex';
+    elements.progressBar.style.width = '0%';
+    elements.progressText.textContent = '0%';
 
     try {
-        // 새로운 PDF 문서 생성
         const mergedPdf = await PDFLib.PDFDocument.create();
-        
-        for (let i = 0; i < pdfFiles.length; i++) {
+        const totalFiles = pdfFiles.length;
+
+        for (let i = 0; i < totalFiles; i++) {
             const file = pdfFiles[i];
-            updateStatus(`⏳ [${i + 1}/${pdfFiles.length}] ${file.name} 처리 중...`, 'progress');
+            
+            // -------------------- 진행률 업데이트 --------------------
+            // 파일 복사 및 처리 단계를 기준으로 진행률 계산
+            const progress = Math.round(((i + 1) / totalFiles) * 100);
+            
+            elements.progressBar.style.width = `${progress}%`;
+            elements.progressText.textContent = `${progress}%`;
+            
+            updateStatus(`⏳ [${i + 1}/${totalFiles}] ${file.name} 처리 중...`);
+            // --------------------------------------------------------
 
-            // File 객체를 ArrayBuffer로 변환
             const arrayBuffer = await file.arrayBuffer();
-
-            // 기존 PDF 문서 로드
             const donorPdf = await PDFLib.PDFDocument.load(arrayBuffer);
-
-            // 페이지 복사
             const copiedPages = await mergedPdf.copyPages(donorPdf, donorPdf.getPageIndices());
 
-            // 새 문서에 페이지 추가
             copiedPages.forEach((page) => {
                 mergedPdf.addPage(page);
             });
         }
 
-        // 새 PDF 문서 저장 (바이트 배열)
-        const pdfBytes = await mergedPdf.save();
+        // 100% 완료 후 상태 업데이트
+        elements.progressBar.style.width = '100%';
+        elements.progressText.textContent = '100%';
+        updateStatus("💾 최종 문서 생성 및 다운로드 준비 중...", 'progress');
 
-        // 다운로드 실행
+        const pdfBytes = await mergedPdf.save();
         const filename = (elements.outputFilename.value || 'merged_document') + '.pdf';
         downloadPdf(pdfBytes, filename);
 
-        updateStatus(`🎉 성공: ${pdfFiles.length}개 파일 병합 완료!`, 'success');
+        updateStatus(`🎉 성공: ${totalFiles}개 파일 병합 완료!`, 'success');
 
     } catch (error) {
         console.error("PDF 병합 실패:", error);
         updateStatus(`❌ 병합 실패: ${error.message}. 콘솔을 확인하세요.`, 'error');
     } finally {
-        // 작업 완료 후 버튼 상태 복구
+        // 작업 완료 후 버튼 상태 복구 및 진행률 표시줄 숨기기
         elements.mergeStartBtn.disabled = false;
+        elements.progressContainer.style.display = 'none';
         checkMergeEligibility(); 
     }
 }
