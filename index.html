@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 친화적 PDF 병합기</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+
+    <header>
+        <h1>📚 사용자 친화적 PDF 병합기</h1>
+        <p>병합할 PDF 파일을 드래그 & 드롭하거나 버튼을 사용하여 추가하세요.</p>
+    </header>
+
+    <main class="container">
+
+        <section class="control-area">
+            <h3>파일 추가 및 관리</h3>
+            <div id="drop-area" class="drop-area">
+                <input type="file" id="file-input" accept=".pdf" multiple hidden>
+                <p>여기에 PDF 파일을 드래그 & 드롭</p>
+                <button id="add-files-btn" class="button primary">➕ 파일 추가</button>
+            </div>
+            <button id="clear-list-btn" class="button secondary">❌ 목록 초기화</button>
+        </section>
+
+        <hr>
+
+        <section class="list-area">
+            <h3>병합 순서 목록 (<span id="file-count">0</span>개 파일)</h3>
+            
+            <div class="file-list-container">
+                <ul id="file-list" class="file-list">
+                    </ul>
+            </div>
+        </section>
+
+        <hr>
+
+        <section class="execution-area">
+            <h3>작업 실행</h3>
+            
+            <div class="output-settings">
+                <label for="output-filename">결과 파일 이름:</label>
+                <input type="text" id="output-filename" value="merged_document" placeholder="결과 파일 이름 (예: final_report)">
+                <span class="file-extension">.pdf</span>
+            </div>
+            
+            <button id="merge-start-btn" class="button action" disabled>▶️ PDF 병합 시작</button>
+
+            <div id="status-message" class="status-message">
+                준비 완료. 병합할 파일을 2개 이상 추가해 주세요.
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 User-Friendly PDF Merger. Powered by JavaScript & PDF-LIB.</p>
+    </footer>
+
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    
+    <script src="pdf-merger.js"></script>
+</body>
+</html>
